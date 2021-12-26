@@ -1,10 +1,10 @@
 #!/bin/bash
 echo "Installing Dependencies"
-sudo apt update -qqq
-sudo apt install --yes -qqq \
+sudo apt update
+sudo apt install --yes \
     git \
     build-essential \
-    gnat \
+    gnat-10 \
     flex \
     bison \
     libncurses5-dev \
