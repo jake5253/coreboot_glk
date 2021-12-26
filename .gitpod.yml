@@ -1,0 +1,65 @@
+# List the start up tasks. Learn more https://www.gitpod.io/docs/config-start-tasks/
+tasks:
+  - name: Dependencies
+  - init: echo "Installing Dependencies"
+  - command: >
+      sudo apt update && 
+      sudo apt install --yes \
+       git \
+       build-essential \
+       gnat \
+       flex \
+       bison \
+       libncurses5-dev \
+       wget \
+       zlib1g-dev \
+       sharutils \
+       e2fsprogs \
+       parted \
+       curl \
+       unzip \
+       ca-certificates \
+       && gp sync-done deps
+
+  - name: Coreboot_Source
+  - init: gp sync-await deps && echo "Obtaining Coreboot Source"
+  - command: >
+      git clone https://review.coreboot.org/coreboot && \
+      cd /workspace/coreboot_glk/coreboot && \
+      git submodule update --init --checkout && \
+      gp sync-done coreboot
+
+  - name: Coreboot_Crosstools
+  - init: gp sync-await coreboot && echo "Building Coreboot crosstools"
+  - command: >
+      cd /workspace/coreboot_glk/coreboot && \
+      make crosstools-x86 CPUS=$(nproc) && \
+      gp sync-done crosstools
+
+  - name: cbfstool_and_ifdtool
+  - init: gp sync-await crosstools && echo "Installing Helper Tools"
+  - command: >
+      cd /workspace/coreboot_glk/coreboot/util/cbfstool && \
+      make && \
+      sudo make install && \
+      cd /workspace/coreboot_glk/coreboot/util/ifdtool && \
+      make && \
+      sudo make install && \
+      gp sync-done helpertools
+
+  - name: FW_Blobs
+  - init: gp sync-await helpertools && echo "Preparing Firmware Blobs"
+  - command: >
+      cd /workspace/coreboot_glk && \
+      /workspace/coreboot_glk/crosfirmware.sh octopus glk && \
+      gp sync-done blobs
+
+  - name: Start_Building
+  - command: >
+      echo "" 
+
+
+# List the ports to expose. Learn more https://www.gitpod.io/docs/config-ports/
+ports:
+  - port: 3000
+    onOpen: open-preview
