@@ -162,9 +162,8 @@ extract_octopus_blobs()
 		do_defconfig $_boardname
 		_boards+=" $_boardname"
 	done
-
+	echo "$_boards" | tee devices
 	#sudo rm -rf "$_unpacked"
-	#export $_boards
 }
 
 do_one_board()
