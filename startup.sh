@@ -24,7 +24,7 @@ git submodule --quiet update --init --checkout
 
 echo "Building Coreboot crosstools"
 cd /workspace/coreboot_glk/coreboot
-make crosstools-x86 CPUS=$(nproc) > /dev/null
+make crosstools-i386 CPUS=$(nproc) > /dev/null
 
 echo "Installing Helper Tools"
 cd /workspace/coreboot_glk/coreboot/util/cbfstool
