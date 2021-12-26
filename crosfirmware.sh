@@ -99,7 +99,7 @@ extract_coreboot()
 do_defconfig()
 {
 	_board=$1
-	cat <<-EOF | tee /workspace/coreboot_glk/coreboot/configs/config.$_board
+	cat <<-EOF | tee /workspace/coreboot_glk/coreboot/configs/config.$_board > /dev/null
 		CONFIG_VENDOR_GOOGLE=y
 		CONFIG_NO_POST=y
 		CONFIG_IFD_BIN_PATH="3rdparty/blobs/mainboard/google/$_board/flashdescriptor.bin"
@@ -118,8 +118,6 @@ do_defconfig()
 		CONFIG_CPU_UCODE_BINARIES="3rdparty/blobs/mainboard/google/$_board/cpu_microcode_blob.bin"
 		CONFIG_LOCK_MANAGEMENT_ENGINE=y
 		CONFIG_HAVE_INTEL_FIRMWARE=y
-		CONFIG_HAVE_ME_BIN=y
-		CONFIG_ME_BIN_PATH="3rdparty/blobs/mainboard/google/$_board/me.bin"
 		CONFIG_HAVE_FSP_GOP=y
 		CONFIG_RUN_FSP_GOP=y
 		CONFIG_TIANOCORE_BOOT_TIMEOUT=2
@@ -144,30 +142,29 @@ extract_octopus_blobs()
 
 	echo "Unpacking recovery image"
 	sh $_shellball --unpack $_unpacked > /dev/null
-	for bios in $(ls $_unpacked/images/bios_*.bin); do
+	for bios in $(ls $_unpacked/images/bios-*.bin); do
 		_boardname=$(basename $bios | cut -d- -f2 | cut -d. -f1)
 		_board_dir=/workspace/coreboot_glk/coreboot/3rdparty/blobs/mainboard/google/$_boardname
 		mkdir -p $_board_dir
 		echo "Extracting $_boardname Blobs"
 		cd $_board_dir
-		ifdtool -x $bios
+		ifdtool -x $bios > /dev/null
 		mv flashregion_0_flashdescriptor.bin flashdescriptor.bin
-		mv flashregion_2_intel_me.bin me.bin
 		rm flashregion*
-		cbfstool $bios read -r IFWI -f $_board_dir/ifwi.bin
+		cbfstool $bios read -r IFWI -f $_board_dir/ifwi.bin > /dev/null
 		_blobs="vbt.bin cpu_microcode_blob.bin"
 		for dsp in $(cbfstool $bios print | grep khz | cut -d" " -f1); do \
 			_blobs+=" $dsp";
 		done
 		for blob in $_blobs; do
-			cbfstool $bios extract -n $blob -f $blob;
+			cbfstool $bios extract -n $blob -f $blob > /dev/null
 		done
 		do_defconfig $_boardname
 		_boards+=" $_boardname"
 	done
 
-	sudo rm -rf "$_unpacked"
-	export $_boards
+	#sudo rm -rf "$_unpacked"
+	#export $_boards
 }
 
 do_one_board()
@@ -199,9 +196,10 @@ do_glk_board()
 
 	extract_partition ROOT-A $_file root-a.ext2
 	extract_shellball root-a.ext2 chromeos-firmwareupdate-$_board
-	sudo rm -rf $_file root-a.ext2
-
 	extract_octopus_blobs chromeos-firmwareupdate-$_board
+
+	#sudo rm -rf $_file root-a.ext2
+
 }
 
 #
@@ -237,7 +235,7 @@ elif [ "$BOARD" != "" ]; then
 	else
 		do_one_board $BOARD $url $file
 	fi
-	sudo rm -rf "$CONF"
+	#sudo rm -rf "$CONF"
 else
 	echo "Usage: $0 <boardname>"
 	echo "       $0 all"
