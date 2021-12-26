@@ -145,6 +145,7 @@ extract_octopus_blobs()
 	for bios in $(ls $_unpacked/images/bios-*.bin); do
 		_boardname=$(basename $bios | cut -d- -f2 | cut -d. -f1)
 		_board_dir=/workspace/coreboot_glk/coreboot/3rdparty/blobs/mainboard/google/$_boardname
+		_nhlt_blobs=/workspace/coreboot_glk/coreboot/3rdparty/blobs/soc/intel/glk/nhlt-blobs
 		mkdir -p $_board_dir
 		echo "Extracting $_boardname Blobs"
 		cd $_board_dir
@@ -153,11 +154,11 @@ extract_octopus_blobs()
 		rm flashregion*
 		cbfstool $bios read -r IFWI -f $_board_dir/ifwi.bin > /dev/null
 		_blobs="vbt.bin cpu_microcode_blob.bin"
-		for dsp in $(cbfstool $bios print | grep khz | cut -d" " -f1); do \
-			_blobs+=" $dsp";
-		done
 		for blob in $_blobs; do
 			cbfstool $bios extract -n $blob -f $blob > /dev/null
+		done
+		for dsp in $(cbfstool $bios print | grep khz | cut -d" " -f1); do \
+			cbfstool $bios extract -n $dsp -f $_nhlt_blobs/$dsp > /dev/null
 		done
 		do_defconfig $_boardname
 		_boards+=" $_boardname"

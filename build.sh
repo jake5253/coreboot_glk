@@ -3,7 +3,8 @@ do_build()
 {
     _dev=$1
     cd /workspace/coreboot_glk/coreboot
-    make defconfig configs/config.$_dev
+    cp configs/config.$_dev .config
+    make olddefconfig
     make CPUS=$(nproc)
 }
 
