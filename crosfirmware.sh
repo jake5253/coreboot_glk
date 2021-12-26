@@ -162,7 +162,7 @@ extract_octopus_blobs()
 		do_defconfig $_boardname
 		_boards+=" $_boardname"
 	done
-	echo "$_boards" | tee devices
+	echo "$_boards" | tee /workspace/coreboot_glk/devices
 	#sudo rm -rf "$_unpacked"
 }
 

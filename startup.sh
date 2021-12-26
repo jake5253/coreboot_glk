@@ -39,3 +39,4 @@ cd /workspace/coreboot_glk
 /workspace/coreboot_glk/crosfirmware.sh octopus glk
 
 echo "Finished"
+exit
