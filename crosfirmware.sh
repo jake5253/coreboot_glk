@@ -7,7 +7,7 @@
 # firmware for building coreboot that works on glk-based Chromebooks
 # Modifications made by github.com/jake5253
 #         USE AT YOUR OWN RISK
-# This file assumes it is located in a directory parallel to coreboot_glk (coreboot source)
+# This file assumes it is located in a directory parallel to coreboot (coreboot source)
 $SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 ##########################################
 
@@ -106,7 +106,7 @@ extract_coreboot()
 do_defconfig()
 {
 	_board=$1
-	cat <<-EOF | tee "${SCRIPT_DIR}/coreboot_glk/configs/config.$_board" > /dev/null
+	cat <<-EOF | tee "${SCRIPT_DIR}/coreboot/configs/config.$_board" > /dev/null
 		CONFIG_VENDOR_GOOGLE=y
 		CONFIG_NO_POST=y
 		CONFIG_IFD_BIN_PATH="3rdparty/blobs/mainboard/google/$_board/flashdescriptor.bin"
@@ -151,8 +151,8 @@ extract_octopus_blobs()
 	sh $_shellball --unpack $_unpacked > /dev/null
 	for bios in $(ls $_unpacked/images/bios-*.bin); do
 		_boardname=$(basename $bios | cut -d- -f2 | cut -d. -f1)
-		_board_dir="${SCRIPT_DIR}/coreboot_glk/3rdparty/blobs/mainboard/google/$_boardname"
-		_nhlt_blobs="${SCRIPT_DIR}/coreboot_glk/3rdparty/blobs/soc/intel/glk/nhlt-blobs"
+		_board_dir="${SCRIPT_DIR}/coreboot/3rdparty/blobs/mainboard/google/$_boardname"
+		_nhlt_blobs="${SCRIPT_DIR}/coreboot/3rdparty/blobs/soc/intel/glk/nhlt-blobs"
 		mkdir -p $_board_dir
 		echo "Extracting $_boardname Blobs"
 		cd $_board_dir
