@@ -1,8 +1,11 @@
 #!/bin/bash
+# This file assumes it is located in a directory parallel to coreboot_glk
+$SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+
 do_build()
 {
     _dev=$1
-    cd /workspace/coreboot_glk/coreboot
+    cd "${SCRIPT_DIR}/coreboot_glk"
     cp configs/config.$_dev .config
     make olddefconfig
     make CPUS=$(nproc)
