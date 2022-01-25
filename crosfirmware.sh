@@ -8,7 +8,7 @@
 # Modifications made by github.com/jake5253
 #         USE AT YOUR OWN RISK
 # This file assumes it is located in a directory parallel to coreboot (coreboot source)
-$SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 ##########################################
 
 
