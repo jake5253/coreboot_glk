@@ -1,5 +1,5 @@
 # coreboot_glk
-Hacky way to build functional Coreboot for GeminiLake-based Chromebooks
+Hacky way to build functional Coreboot with Tianocore Payload for GeminiLake-based Chromebooks -- BOOT EFI OSes on Chromebook
 
 
 USAGE:
