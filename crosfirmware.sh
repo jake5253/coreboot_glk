@@ -154,6 +154,7 @@ extract_octopus_blobs()
 		_board_dir="${SCRIPT_DIR}/coreboot/3rdparty/blobs/mainboard/google/$_boardname"
 		_nhlt_blobs="${SCRIPT_DIR}/coreboot/3rdparty/blobs/soc/intel/glk/nhlt-blobs"
 		mkdir -p $_board_dir
+		mkdir -p $_nhlt_blobs
 		echo "Extracting $_boardname Blobs"
 		cd $_board_dir
 		ifdtool -x $bios > /dev/null
