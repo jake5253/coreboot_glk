@@ -2,8 +2,13 @@
 #
 # SPDX-License-Identifier: GPL-2.0-only
 
+##########################################
 # Modified from coreboot source to extract specific bits of 
 # firmware for building coreboot that works on glk-based Chromebooks
+# Modifications made by github.com/jake5253
+#         USE AT YOUR OWN RISK
+##########################################
+
 
 # On some systems, `parted` and `debugfs` are located in /sbin.
 export PATH="$PATH:/sbin"
@@ -181,10 +186,6 @@ do_one_board()
 
 	extract_coreboot chromeos-firmwareupdate-$_board
 }
-
-#
-# Alterations to extract blobs needed for glk builds
-#
 
 do_glk_board()
 {
