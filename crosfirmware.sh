@@ -23,10 +23,10 @@ exit_if_uninstalled() {
 		return
 	fi
 
+	printf '`%s` was not found. ' "$cmd_name" >&4
+	printf 'On Debian-based systems, it can be installed\n' >&4
+	printf 'by running `apt install %s`.\n' "$deb_pkg_name" >&4
 	printf '`%s` was not found. ' "$cmd_name" >&2
-	printf 'On Debian-based systems, it can be installed\n' >&2
-	printf 'by running `apt install %s`.\n' "$deb_pkg_name" >&2
-
 	exit 1
 }
 
@@ -44,6 +44,8 @@ get_inventory()
 	_url=https://dl.google.com/dl/edgedl/chromeos/recovery/recovery.conf
 
 	echo "Downloading recovery image inventory..."
+	echo "Downloading recovery image inventory..." >&3
+
 
 	curl -s "$_url" > $_conf
 }
@@ -54,8 +56,10 @@ download_image()
 	_file=$2
 
 	echo "Downloading recovery image"
+	echo "Downloading recovery image" >&3
 	curl "$_url" > "$_file.zip"
 	echo "Decompressing recovery image"
+	echo "Decompressing recovery image" >&3
 	unzip -q "$_file.zip"
 	sudo rm -rf "$_file.zip"
 }
@@ -94,6 +98,7 @@ extract_coreboot()
 	_unpacked=$( mktemp -d )
 
 	echo "Extracting coreboot image"
+	echo "Extracting coreboot image" >&3
 	sh $_shellball --unpack $_unpacked > /dev/null
 
 	_version=$( cat $_unpacked/VERSION | grep BIOS\ version: | \
@@ -106,7 +111,7 @@ extract_coreboot()
 do_defconfig()
 {
 	_board=$1
-	cat <<-EOF | tee "${SCRIPT_DIR}/coreboot/configs/config.$_board" > /dev/null
+	cat <<-EOF | tee "${SCRIPT_DIR}/coreboot/configs/config.$_board"
 		CONFIG_VENDOR_GOOGLE=y
 		CONFIG_NO_POST=y
 		CONFIG_IFD_BIN_PATH="3rdparty/blobs/mainboard/google/$_board/flashdescriptor.bin"
@@ -148,6 +153,7 @@ extract_octopus_blobs()
 	_boards=
 
 	echo "Unpacking recovery image"
+	echo "Unpacking recovery image" >&3
 	sh $_shellball --unpack $_unpacked > /dev/null
 	for bios in $(ls $_unpacked/images/bios-*.bin); do
 		_boardname=$(basename $bios | cut -d- -f2 | cut -d. -f1)
@@ -156,17 +162,18 @@ extract_octopus_blobs()
 		mkdir -p $_board_dir
 		mkdir -p $_nhlt_blobs
 		echo "Extracting $_boardname Blobs"
+		echo "Extracting $_boardname Blobs" >&3
 		cd $_board_dir
-		ifdtool -x $bios > /dev/null
+		ifdtool -x $bios
 		mv flashregion_0_flashdescriptor.bin flashdescriptor.bin
 		rm flashregion*
-		cbfstool $bios read -r IFWI -f $_board_dir/ifwi.bin > /dev/null
+		cbfstool $bios read -r IFWI -f $_board_dir/ifwi.bin
 		_blobs="vbt.bin cpu_microcode_blob.bin"
 		for blob in $_blobs; do
-			cbfstool $bios extract -n $blob -f $blob > /dev/null
+			cbfstool $bios extract -n $blob -f $blob
 		done
 		for dsp in $(cbfstool $bios print | grep khz | cut -d" " -f1); do \
-			cbfstool $bios extract -n $dsp -f $_nhlt_blobs/$dsp > /dev/null
+			cbfstool $bios extract -n $dsp -f $_nhlt_blobs/$dsp
 		done
 		do_defconfig $_boardname
 		_boards+=" $_boardname"
@@ -232,7 +239,8 @@ elif [ "$BOARD" != "" ]; then
 	CONF=$( mktemp )
 	get_inventory $CONF
 
-	echo Processing board $BOARD
+	echo "Processing board $BOARD"
+	echo "Processing board $BOARD" >&3
 	eval $( grep $BOARD $CONF | grep '\(url=\|file=\)' )
 	if [ "$2" == "glk" ]; then
 		do_glk_board $BOARD $url $file
@@ -241,8 +249,8 @@ elif [ "$BOARD" != "" ]; then
 	fi
 	#sudo rm -rf "$CONF"
 else
-	echo "Usage: $0 <boardname>"
-	echo "       $0 all"
-	echo
+	echo "Usage: $0 <boardname>" >&3
+	echo "       $0 all" >&3
+	echo >&3
 	exit 1
 fi
