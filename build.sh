@@ -31,3 +31,8 @@ while [ -z $dev ]; do
         continue
     fi
 done
+
+echo "Build process completed. A window will pop open containing your compiled firmware so you can download and store the file locally"
+echo
+echo "To build for another device, run build.sh again."
+python3 -m http.server --directory coreboot 3000
