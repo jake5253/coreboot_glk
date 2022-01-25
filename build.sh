@@ -1,6 +1,6 @@
 #!/bin/bash
 # This file assumes it is located in a directory parallel to coreboot_glk
-$SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 
 do_build()
 {
