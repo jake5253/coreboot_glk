@@ -2,7 +2,7 @@
 
 # Main dependencies
 echo "Installing Dependencies"
-sudo apt update --qq 2>&1 > /tmp/buildlog
+sudo apt update 2>&1 > /tmp/buildlog
 sudo apt install --yes \
     git \
     build-essential \
@@ -18,7 +18,7 @@ sudo apt install --yes \
     curl \
     unzip \
     ca-certificates \
-    --qq 2>&1 > /tmp/buildlog
+    2>&1 > /tmp/buildlog
     
 echo "At any time, if you wish to view the builder log, you can open your browser to:"
 gp url 8123
