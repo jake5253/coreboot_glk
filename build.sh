@@ -5,7 +5,7 @@ $SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 do_build()
 {
     _dev=$1
-    cd "${SCRIPT_DIR}/coreboot_glk"
+    cd "${SCRIPT_DIR}/coreboot"
     cp configs/config.$_dev .config
     make olddefconfig
     make CPUS=$(nproc)
