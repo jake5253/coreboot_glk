@@ -1,7 +1,17 @@
 # List the start up tasks. Learn more https://www.gitpod.io/docs/config-start-tasks/
 tasks:
-  - init: echo "Installing Dependencies" && /workspace/coreboot_glk/gitpod_startup.sh
-  - command: echo "Setup has completed. To build for your device, run build.sh" && /workspace/coreboot_glk/build.sh
+  - init: |
+      echo "Installing Dependencies"
+      sudo apt update
+      sudo apt install --yes git build-essential gnat-10 flex bison libncurses5-dev wget zlib1g-dev sharutils e2fsprogs parted curl unzip ca-certificates
+  - command: |
+      echo "Obtaining Coreboot Source" && git clone --quiet https://review.coreboot.org/coreboot
+      echo "Getting Coreboot submodules && cd coreboot && git submodule --quiet update --init --checkout
+      echo -e "Building Coreboot crosstools.\n This may take a few minutes" && make crossgcc-i386 CPUS=$(nproc) > /dev/null
+      echo "Installing Helper Tools" && cd /util/cbfstool && make > /dev/null && sudo make install > /dev/null
+      cd ../ifdtool && make > /dev/null && sudo make install > /dev/null
+      cd /workspace/coreboot_glk && echo "Preparing Firmware Blobs" && bash ./crosfirmware.sh octopus glk
+      echo "Setup has completed" && bash ./build.sh
 
 # List the ports to expose. Learn more https://www.gitpod.io/docs/config-ports/
 ports:
