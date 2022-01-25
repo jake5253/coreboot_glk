@@ -2,7 +2,7 @@
 [[ -f logger/build.log ]] && rm logger/build.log || touch logger/build.log
 exec 3>&1 4>&2
 trap 'exec 2>&4 1>&3' 0 1 2 3
-exec 1>logger/build.log 2>&1
+exec 1>>logger/build.log 2>&1
 
 # Main dependencies
 echo "Installing Dependencies" >&3
