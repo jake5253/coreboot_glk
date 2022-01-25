@@ -1,4 +1,8 @@
 #!/bin/bash
+# This file assumes it is located in a directory parallel to coreboot_glk
+$SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+
+
 echo "Installing Dependencies"
 sudo apt update
 sudo apt install --yes \
@@ -18,25 +22,24 @@ sudo apt install --yes \
     ca-certificates
 
 echo "Obtaining Coreboot Source"
-git clone --quiet https://review.coreboot.org/coreboot
-cd /workspace/coreboot_glk/coreboot
+git clone --quiet https://review.coreboot.org/coreboot "${SCRIPT_DIR}/coreboot_glk"
+cd "${SCRIPT_DIR}/coreboot_glk"
 git submodule --quiet update --init --checkout
 
 echo "Building Coreboot crosstools"
-cd /workspace/coreboot_glk/coreboot
+cd "${SCRIPT_DIR}/coreboot_glk"
 make crossgcc-i386 CPUS=$(nproc) > /dev/null
 
 echo "Installing Helper Tools"
-cd /workspace/coreboot_glk/coreboot/util/cbfstool
+cd ""${SCRIPT_DIR}/coreboot_glk/util/cbfstool"
 make > /dev/null
 sudo make install > /dev/null 
-cd /workspace/coreboot_glk/coreboot/util/ifdtool
+cd ""${SCRIPT_DIR}/coreboot_glk/util/ifdtool"
 make > /dev/null
 sudo make install > /dev/null
 
 echo "Preparing Firmware Blobs"
-cd /workspace/coreboot_glk
-/workspace/coreboot_glk/crosfirmware.sh octopus glk
+bash "${SCRIPT_DIR}/crosfirmware.sh" octopus glk
 
 echo "Finished"
 exit
