@@ -1,33 +1,35 @@
 <!doctype html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>Read Log File</title>
-
+<script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
 </head>
-
 <body>
-<div>
-    <ul id="log">
+	<span class="header">Non-interactive real-time build.log viewer</span>
+		<div class="shell_wrapper">
+			<li class="logline" id="time1">
+				<i class="icon fa fa-clock-o" aria-hidden="true">
+				</i> 
+				<span class="item_title">10am - 4pm (value comes through Ajax)</span>
+			</li>
+		</div>
+	</div>
+<script type="text/javascript">
+$(document).ready(function(e) {
+        e.preventDefault();
+        $.ajax({
+            type: "POST",
+            url: 'readlog.php',
+            data: $(this).serialize(),
+            success: function(response)
+            {
+                var jsonData = JSON.parse(response);
+                 if (jsonData != "")
+                {
 
-    </ul>
-</div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><script>
-
-    $(function(){
-
-        setInterval(function(){
-            $.getJSON( "./readlog.php", function( data ) {
-              var $log = $('#log');
-              $.each( data, function( key, val ) {
-                $log.prepend( "<li>" + val + "</li>" );
-              });
-            });
-
-        },100);
-
-    });
-
+				}
+           }
+       });
+     });
 </script>
 </body>
 </html>
