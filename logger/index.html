@@ -1,32 +1,33 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Build Log Viewer</title>
-	<style>
-		body {font-family: monospace;}
-		p{ margin: 0;}
-		ul{padding: 0;}
-		li{list-style:none; padding: 0; margin: 0;}
-	</style>
+<meta charset="UTF-8">
+<title>Read Log File</title>
+
 </head>
+
 <body>
-<ul id="logger">
-	
-</ul>
-<script>
-	const socket = new WebSocket('ws://localhost:8123');
-	var log = document.getElementById('logger')
+<div>
+    <ul id="log">
 
-  	// Listen for messages
-	socket.addEventListener('message', function (event) {
-		var text = document.createTextNode(event.data)
-		var li = document.createElement("li")
-		li.appendChild(text)
-		log.prepend(li)
-	});		
+    </ul>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><script>
+
+    $(function(){
+
+        setInterval(function(){
+            $.getJSON( "./readlog.php", function( data ) {
+              var $log = $('#log');
+              $.each( data, function( key, val ) {
+                $log.prepend( "<li>" + val + "</li>" );
+              });
+            });
+
+        },100);
+
+    });
+
 </script>
-
 </body>
 </html>

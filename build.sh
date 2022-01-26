@@ -16,7 +16,7 @@ do_build()
 {
     _dev=$1
     cd "${SCRIPT_DIR}/coreboot"
-    [[ $sourced == 0]] && make distclean
+    [[ $sourced == 0 ]] && make distclean
     cp configs/config.$_dev .config
     make olddefconfig
     make CPUS=$(nproc)

@@ -21,13 +21,10 @@ sudo apt install --yes \
     parted \
     curl \
     unzip \
-    ca-certificates \
-    python3-pip
+    ca-certificates
     
-# Set up a python server to display "tail -f" in a browser window
-python3 -m pip install websockets
-nohup python3 -u logger/tail.py webserver ./build.log > logger/pythonwebserver.log &
-nohup python3 -u logger/tail.py tailserver ./build.log > logger/pythontailserver.log &
+# Set up a php server to display build log in a separate browser window
+nohup php -S 0.0.0.0:8123 -t logger &
 
 echo "At any time, if you wish to view the builder log, you can open your browser to:" >&3
 gp url 8123 >&3
