@@ -14,7 +14,7 @@ SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 
 do_crosfirmware()
 {
-    bash ${SCRIPT_DIR}/crosfirmware.sh octopus glk
+    bash ${SCRIPT_DIR}/crosfirmware.sh
 }
 
 do_build()
@@ -27,9 +27,7 @@ do_build()
     make CPUS=$(nproc)
 }
 
-
-devices=($(cat "${SCRIPT_DIR}/devices"))
-while [ -z $devices ]; do
+while [ ! -f ${SCRIPT_DIR}/devices ]; do
     do_crosfirmware
     devices=($(cat "${SCRIPT_DIR}/devices"))
 done
@@ -38,6 +36,8 @@ while [ -z $dev ]; do
     for ((i = 0; i < ${#devices}; i++)); do
         echo "${devices[$i]}";
     done
+    echo 
+    echo "Type x or exit to stop the build"
     read -r -p "Selection : " dev
     for ((i = 0; i < ${#devices}; i++)); do
         if [[ ${devices[$i]} = "${dev,,}" ]]; then

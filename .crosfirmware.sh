@@ -23,9 +23,10 @@ exit_if_uninstalled() {
 		return
 	fi
 
+	printf '`%s` was not found. ' "$cmd_name" >&4
+	printf 'On Debian-based systems, it can be installed\n' >&4
+	printf 'by running `apt install %s`.\n' "$deb_pkg_name" >&4
 	printf '`%s` was not found. ' "$cmd_name" >&2
-	printf 'On Debian-based systems, it can be installed\n' >&2
-	printf 'by running `apt install %s`.\n' "$deb_pkg_name" >&2
 	exit 1
 }
 
@@ -43,6 +44,8 @@ get_inventory()
 	_url=https://dl.google.com/dl/edgedl/chromeos/recovery/recovery.conf
 
 	echo "Downloading recovery image inventory..."
+	echo "Downloading recovery image inventory..." >&3
+
 
 	curl -s "$_url" > $_conf
 }
@@ -53,8 +56,10 @@ download_image()
 	_file=$2
 
 	echo "Downloading recovery image"
+	echo "Downloading recovery image" >&3
 	curl "$_url" > "$_file.zip"
 	echo "Decompressing recovery image"
+	echo "Decompressing recovery image" >&3
 	unzip -q "$_file.zip"
 	sudo rm -rf "$_file.zip"
 }
@@ -85,6 +90,22 @@ extract_shellball()
 	echo "Extracting chromeos-firmwareupdate"
 	printf "cd /usr/sbin\ndump chromeos-firmwareupdate $SHELLBALL\nquit" | \
 		debugfs $ROOTFS > /dev/null 2>&1
+}
+
+extract_coreboot()
+{
+	_shellball=$1
+	_unpacked=$( mktemp -d )
+
+	echo "Extracting coreboot image"
+	echo "Extracting coreboot image" >&3
+	sh $_shellball --unpack $_unpacked > /dev/null
+
+	_version=$( cat $_unpacked/VERSION | grep BIOS\ version: | \
+			cut -f2 -d: | tr -d \  )
+
+	cp $_unpacked/bios.bin coreboot-$_version.bin
+	sudo rm -rf "$_unpacked"
 }
 
 do_defconfig()
@@ -132,6 +153,7 @@ extract_octopus_blobs()
 	_boards=
 
 	echo "Unpacking recovery image"
+	echo "Unpacking recovery image" >&3
 	sh $_shellball --unpack $_unpacked > /dev/null
 	for bios in $(ls $_unpacked/images/bios-*.bin); do
 		_boardname=$(basename $bios | cut -d- -f2 | cut -d. -f1)
@@ -140,6 +162,7 @@ extract_octopus_blobs()
 		mkdir -p $_board_dir
 		mkdir -p $_nhlt_blobs
 		echo "Extracting $_boardname Blobs"
+		echo "Extracting $_boardname Blobs" >&3
 		cd $_board_dir
 		ifdtool -x $bios
 		mv flashregion_0_flashdescriptor.bin flashdescriptor.bin
@@ -155,8 +178,23 @@ extract_octopus_blobs()
 		do_defconfig $_boardname
 		_boards+=" $_boardname"
 	done
-	echo "$_boards" | tee "${SCRIPT_DIR}/devices" >/dev/null
+	echo "$_boards" | tee "${SCRIPT_DIR}/devices"
 	#sudo rm -rf "$_unpacked"
+}
+
+do_one_board()
+{
+	_board=$1
+	_url=$2
+	_file=$3
+
+	download_image $_url $_file
+
+	extract_partition ROOT-A $_file root-a.ext2
+	extract_shellball root-a.ext2 chromeos-firmwareupdate-$_board
+	sudo rm -rf $_file root-a.ext2
+
+	extract_coreboot chromeos-firmwareupdate-$_board
 }
 
 do_glk_board()
@@ -171,7 +209,7 @@ do_glk_board()
 	extract_shellball root-a.ext2 chromeos-firmwareupdate-$_board
 	extract_octopus_blobs chromeos-firmwareupdate-$_board
 
-	sudo rm -rf $_file root-a.ext2
+	#sudo rm -rf $_file root-a.ext2
 
 }
 
@@ -179,12 +217,40 @@ do_glk_board()
 # Main
 #
 
-BOARD=octopus
-exit_if_dependencies_are_missing
-CONF=$( mktemp )
-TEMP=$( mktemp -d )
-get_inventory $CONF
+BOARD=$1
 
-echo "Processing board $BOARD"
-eval $( grep $BOARD $CONF | grep '\(url=\|file=\)' )
-do_glk_board $BOARD $url $file
+exit_if_dependencies_are_missing
+
+if [ "$BOARD" == "all" ]; then
+	CONF=$( mktemp )
+	get_inventory $CONF
+
+	grep ^name= $CONF| while read _line; do
+		name=$( echo $_line | cut -f2 -d= )
+		echo Processing board $name
+		eval $( grep -v hwid= $CONF | grep -A11 "$_line" | \
+						grep '\(url=\|file=\)' )
+		BOARD=$( echo $url | cut -f3 -d_ )
+		do_one_board $BOARD $url $file
+	done
+
+	sudo rm -rf "$CONF"
+elif [ "$BOARD" != "" ]; then
+	CONF=$( mktemp )
+	get_inventory $CONF
+
+	echo "Processing board $BOARD"
+	echo "Processing board $BOARD" >&3
+	eval $( grep $BOARD $CONF | grep '\(url=\|file=\)' )
+	if [ "$2" == "glk" ]; then
+		do_glk_board $BOARD $url $file
+	else
+		do_one_board $BOARD $url $file
+	fi
+	#sudo rm -rf "$CONF"
+else
+	echo "Usage: $0 <boardname>" >&3
+	echo "       $0 all" >&3
+	echo >&3
+	exit 1
+fi
