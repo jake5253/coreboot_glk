@@ -19,7 +19,10 @@ sudo apt install --yes \
     parted \
     curl \
     unzip \
-    ca-certificates
+    ca-certificates \
+    libflashrom-dev \
+    pkg-config \
+    libglib2.0-dev
 
 echo "Obtaining Coreboot Source"
 git clone --quiet https://review.coreboot.org/coreboot "${SCRIPT_DIR}/coreboot"
@@ -28,18 +31,16 @@ git submodule --quiet update --init --checkout
 
 echo "Building Coreboot crosstools"
 cd "${SCRIPT_DIR}/coreboot"
-make crossgcc-i386 CPUS=$(nproc) > /dev/null
+make crossgcc-i386 CPUS=$(nproc) >/dev/null
 
 echo "Installing Helper Tools"
 cd "${SCRIPT_DIR}/coreboot/util/cbfstool"
-make > /dev/null
-sudo make install > /dev/null 
+make cbfstool >/dev/null
+sudo install -m 0755 cbfstool /usr/bin/cbfstool >/dev/null 
 cd "${SCRIPT_DIR}/coreboot/util/ifdtool"
-make > /dev/null
-sudo make install > /dev/null
+make >/dev/null
+sudo make install >/dev/null
 
-echo "Preparing Firmware Blobs"
-bash "${SCRIPT_DIR}/crosfirmware.sh" octopus glk
-
+bash ${SCRIPT_DIR}/build.sh
 echo "Finished"
 exit
