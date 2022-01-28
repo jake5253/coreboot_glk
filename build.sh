@@ -21,16 +21,16 @@ do_build()
 {
     _dev=$1
     cd "${SCRIPT_DIR}/coreboot"
+    pwd
+    sleep 3
     make distclean
     cp configs/config.$_dev .config
     make olddefconfig
     make CPUS=$(nproc)
 }
 
-while [ ! -f ${SCRIPT_DIR}/devices ]; do
-    do_crosfirmware
-    devices=($(cat "${SCRIPT_DIR}/devices"))
-done
+[[ -f "${SCRIPT_DIR}/devices" ]] && devices=($(cat "${SCRIPT_DIR}/devices")) || do_crosfirmware
+
 while [ -z $dev ]; do
     echo "Choose one of the following devices for the build:"
     for ((i = 0; i < ${#devices}; i++)); do
