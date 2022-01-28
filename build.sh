@@ -11,6 +11,8 @@
 
 # This file assumes it is located in a directory parallel to coreboot_glk
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+export TMPDIR="./temp"
+mkdir -p $TMPDIR
 
 do_crosfirmware()
 {

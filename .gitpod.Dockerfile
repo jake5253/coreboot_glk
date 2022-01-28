@@ -1,7 +1,7 @@
 FROM gitpod/workspace-full
 
-ARG WORKDIRBASE
-ENV WORKDIRBASE=${WORKDIRBASE:-/workspace/coreboot_glk}
+# ARG WORKDIRBASE
+# ENV WORKDIRBASE=${WORKDIRBASE:-workspace/coreboot_glk}
 
 # Install custom tools, runtime, etc.
 RUN echo "Installing dependencies" \
@@ -21,9 +21,10 @@ RUN echo "Installing dependencies" \
         curl \
         unzip \
         ca-certificates \
+        flashrom \
     && sudo rm -rf /var/lib/apt/lists/*
 
-WORKDIR $WORKDIRBASE
+# WORKDIR $WORKDIRBASE
 RUN echo "Obtaining Coreboot source and submodules" \
     && git clone https://review.coreboot.org/coreboot \
     && cd coreboot \
@@ -35,13 +36,13 @@ RUN echo -e "Building Coreboot crossgcc.\nThis could take a while (10-15 minutes
 
 RUN echo "Building and installing helper tools"
 
-WORKDIR $WORKDIRBASE/coreboot/util/cbfstool
+WORKDIR util/cbfstool
 RUN make \
     && sudo make install
 
-WORKDIR $WORKDIRBASE/coreboot/util/ifdtool
+WORKDIR ../ifdtool
 RUN make \
     && sudo make install
 
-WORKDIR $WORKDIRBASE
+WORKDIR ../../../
 ENTRYPOINT exec bash build.sh

@@ -44,6 +44,7 @@ get_inventory()
 
 	echo "Downloading recovery image inventory..."
 
+
 	curl -s "$_url" > $_conf
 }
 
@@ -132,22 +133,21 @@ extract_octopus_blobs()
 	_boards=
 
 	echo "Unpacking recovery image"
-	sh $_shellball --unpack $_unpacked > /dev/null
+	sh $_shellball --unpack $_unpacked
 	for bios in $(ls $_unpacked/images/bios-*.bin); do
 		_boardname=$(basename $bios | cut -d- -f2 | cut -d. -f1)
 		_board_dir="${SCRIPT_DIR}/coreboot/3rdparty/blobs/mainboard/google/$_boardname"
 		_nhlt_blobs="${SCRIPT_DIR}/coreboot/3rdparty/blobs/soc/intel/glk/nhlt-blobs"
 		mkdir -p $_board_dir
 		mkdir -p $_nhlt_blobs
-		echo "Extracting $_boardname Blobs"
-		cd $_board_dir
+		echo "Extracting $_boardname blobs"
 		ifdtool -x $bios
-		mv flashregion_0_flashdescriptor.bin flashdescriptor.bin
+		mv flashregion_0_flashdescriptor.bin $_board_dir/flashdescriptor.bin
 		rm flashregion*
 		cbfstool $bios read -r IFWI -f $_board_dir/ifwi.bin
-		_blobs="vbt.bin cpu_microcode_blob.bin"
+		_blobs="vbt.bin cpu_microcode_blob.bin fsps.bin fspm.bin"
 		for blob in $_blobs; do
-			cbfstool $bios extract -n $blob -f $blob
+			cbfstool $bios extract -n $blob -f $_board_dir/$blob
 		done
 		for dsp in $(cbfstool $bios print | grep khz | cut -d" " -f1); do \
 			cbfstool $bios extract -n $dsp -f $_nhlt_blobs/$dsp
@@ -156,10 +156,9 @@ extract_octopus_blobs()
 		_boards+=" $_boardname"
 	done
 	echo "$_boards" | tee "${SCRIPT_DIR}/devices" >/dev/null
-	#sudo rm -rf "$_unpacked"
 }
 
-do_glk_board()
+do_octopus()
 {
 	_board=$1
 	_url=$2
@@ -170,9 +169,6 @@ do_glk_board()
 	extract_partition ROOT-A $_file root-a.ext2
 	extract_shellball root-a.ext2 chromeos-firmwareupdate-$_board
 	extract_octopus_blobs chromeos-firmwareupdate-$_board
-
-	sudo rm -rf $_file root-a.ext2
-
 }
 
 #
@@ -180,11 +176,12 @@ do_glk_board()
 #
 
 BOARD=octopus
+
 exit_if_dependencies_are_missing
 CONF=$( mktemp )
-TEMP=$( mktemp -d )
 get_inventory $CONF
 
 echo "Processing board $BOARD"
 eval $( grep $BOARD $CONF | grep '\(url=\|file=\)' )
-do_glk_board $BOARD $url $file
+do_octopus $BOARD $url $file
+	
