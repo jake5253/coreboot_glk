@@ -11,8 +11,6 @@
 
 # This file assumes it is located in a directory parallel to coreboot_glk
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
-export TMPDIR="./temp"
-mkdir -p $TMPDIR
 
 do_crosfirmware()
 {
@@ -45,7 +43,7 @@ while [ -z $dev ]; do
         if [[ ${devices[$i]} = "${dev,,}" ]]; then
             do_build $dev
             break
-        elif [[ ${dev,,} == ^(x|exit)$ ]]; then
+        elif [[ ${dev,,} =~ ^(x|exit)$ ]]; then
             exit
         fi
     done
@@ -61,4 +59,4 @@ echo -e "Build process completed. \
     \nfirmware so you can download and store the file locally"
 echo 
 echo "To build for another device, run build.sh again."
-python3 -m http.server --directory coreboot 3000
+python3 -m http.server --directory ./ 3000
