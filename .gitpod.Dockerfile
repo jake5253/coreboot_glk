@@ -21,7 +21,8 @@ RUN echo "Installing dependencies" \
         curl \
         unzip \
         ca-certificates \
-        flashrom \
+        libflashrom-dev \
+        pkg-config \
     && sudo rm -rf /var/lib/apt/lists/*
 
 # WORKDIR $WORKDIRBASE
@@ -37,7 +38,8 @@ RUN echo -e "Building Coreboot crossgcc.\nThis could take a while (10-15 minutes
 RUN echo "Building and installing helper tools"
 
 WORKDIR util/cbfstool
-RUN make \
+RUN /usr/bin/pkg-config --help \
+    && make \
     && sudo make install
 
 WORKDIR ../ifdtool
