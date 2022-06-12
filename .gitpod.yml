@@ -3,8 +3,34 @@ image:
 
 # List the start up tasks. Learn more https://www.gitpod.io/docs/config-start-tasks/
 tasks:
-  - init: git clone https://review.coreboot.org/coreboot && cd coreboot && git submodule update --init --checkout
-  - command: bash build.sh
+  - name: Clone Coreboot, build and install tools
+    init: |
+      git clone https://review.coreboot.org/coreboot
+      cd coreboot 
+      git submodule update --init --checkout
+    command: gp sync-done clone
+
+  - name: Build tools
+    init: gp sync-await clone
+    command: |
+      make -C ./coreboot/util/cbfstool cbfstool
+      sudo make -C ./coreboot/util/cbfstool/ install
+      make -C ./coreboot/util/ifdtool/
+      sudo make -C ./coreboot/util/ifdtool/ install
+      gp sync-done tools
+
+  - name: Build crossgcc
+    init: gp sync-await clone
+    command: |
+      make -C coreboot crossgcc-i386 CPUS=$(nproc)
+      gp sync-done crossgcc
+
+  - name: Build Coreboot
+    init: |
+      gp sync-await clone
+      gp sync-await tools
+      gp sync-await crossgcc
+    command: bash build.sh
 
 
 # List the ports to expose. Learn more https://www.gitpod.io/docs/config-ports/
