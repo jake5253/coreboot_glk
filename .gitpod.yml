@@ -17,6 +17,9 @@ tasks:
       sudo make -C ./coreboot/util/cbfstool/ install
       make -C ./coreboot/util/ifdtool/
       sudo make -C ./coreboot/util/ifdtool/ install
+      make -C ./coreboot iasl
+      make -C ./coreboot nasm
+      
       gp sync-done tools
       exit
 

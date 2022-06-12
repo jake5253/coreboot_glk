@@ -20,7 +20,8 @@ build_coreboot()
     make olddefconfig
     touch $LOG_DIR/coreboot.log
     LOGPID=$( ( nohup python $LOG_DIR/log_stream.py $LOG_DIR/coreboot.log >/dev/null 2>&1 & echo $! ) )
-    ( nohup make CPUS=$(nproc) 2>&1 >$LOG_DIR/coreboot.log & ${GITPOD_REPO_ROOT}/spinner.sh $! 2>/dev/null )
+    MAKEPID=$( ( nohup make -C ${GITPOD_REPO_ROOT}/coreboot all CPUS=$(nproc) >$LOG_DIR/coreboot.log 2>&1 & echo $! ) )
+    ${GITPOD_REPO_ROOT}/spinner.sh ${MAKEPID} 2>/dev/null
     kill -9 $LOGPID
 }
 
@@ -47,17 +48,14 @@ while [ -z $dev ]; do
     echo 
     echo "Type x or exit to cancel"
     read -r -p "Selection: " dev
-    for ((i = 0; i < ${#devices[*]}; i++)); do
-        if [[ ${devices[$i]} = "${dev,,}" ]]; then
-            build_coreboot $dev && showfiles || { echo "ERROR!! Coreboot build failed!"; exit 1; }
-            break
+    for dv in ${devices[*]}; do
+        if [[ "${dv,,}" = "${dev,,}" ]]; then
+            valid=true
+            break            
         elif [[ ${dev,,} =~ ^(x|exit)$ ]]; then
             exit
-        else
-            echo "ERROR: Invalid selection: ${dev}";
-            unset dev
-            break
         fi
     done
-    unset dev
+    [[ $valid ]] && { build_coreboot $dev && showfiles || { echo "ERROR!! Coreboot build failed!"; exit 1; } } || { echo "$dev is not a valid selection"; unset dev; }
 done
+unset dev

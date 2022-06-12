@@ -23,7 +23,14 @@ RUN echo "Installing dependencies" \
         libflashrom-dev \
         pkg-config \
         libglib2.0-dev \
+        python3 \
+        python3-pip \
+        python-is-python3 \
     && sudo rm -rf /var/lib/apt/lists/*
+
+RUN pip3 install --upgrade pip \
+    && pip3 install flask
+    
 #
 #RUN echo "Obtaining Coreboot source and submodules" \
 #    && git clone https://review.coreboot.org/coreboot \
