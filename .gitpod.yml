@@ -8,7 +8,7 @@ tasks:
       git clone https://review.coreboot.org/coreboot
       cd coreboot 
       git submodule update --init --checkout
-    command: gp sync-done clone
+    command: gp sync-done clone && exit
 
   - name: Build tools
     init: gp sync-await clone
@@ -18,12 +18,14 @@ tasks:
       make -C ./coreboot/util/ifdtool/
       sudo make -C ./coreboot/util/ifdtool/ install
       gp sync-done tools
+      exit
 
   - name: Build crossgcc
     init: gp sync-await clone
     command: |
       make -C coreboot crossgcc-i386 CPUS=$(nproc)
       gp sync-done crossgcc
+      exit
 
   - name: Build Coreboot
     init: |
