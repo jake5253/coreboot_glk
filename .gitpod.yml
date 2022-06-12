@@ -29,9 +29,19 @@ tasks:
 
   - name: Build Coreboot
     init: |
+      clear
+      echo "We are cloning, building and installing required tools"
+      echo "for coreboot_glk. This process will take quite a while"
+      echo "even here on Gitpod. Please allow 10 - 15 minutes for"
+      echo "this process to finish."
       gp sync-await clone
+      echo "Cloning coreboot repo has finished"
       gp sync-await tools
-      gp sync-await crossgcc
+      echo "Building the helper tools has finished"
+      echo "We're building the crossgcc toolchain now. This is the"
+      echo "big one that takes a while. BRB"
+      gp sync-await crossgcc & ./spinner.sh $!
+      exit
     command: bash build.sh
 
 
