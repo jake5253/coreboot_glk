@@ -26,11 +26,12 @@ RUN echo "Installing dependencies" \
         python3 \
         python3-pip \
         python-is-python3 \
+        nasm \
     && sudo rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install --upgrade pip \
     && pip3 install flask
-    
+
 #
 #RUN echo "Obtaining Coreboot source and submodules" \
 #    && git clone https://review.coreboot.org/coreboot \
