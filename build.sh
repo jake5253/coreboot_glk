@@ -1,45 +1,53 @@
 #!/bin/bash
 
-# The following line determines if the script was run directly or sourced by gitpod_build.sh
-#(return 0 2>/dev/null) && sourced=1 || sourced=0
-
-#[[ $sourced == 0 ]] && {
-#exec 3>&1 4>&2;
-#trap 'exec 2>&4 1>&3' 0 1 2 3;
-#exec 1>>logger/build.log 2>&1;
-#}
-
 # This file assumes it is located in a directory parallel to coreboot_glk
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+LOG_DIR=${GITPOD_REPO_ROOT}/log
 
 do_crosfirmware()
 {
     bash ${SCRIPT_DIR}/crosfirmware.sh
 }
-
+build_crossgcc()
+{
+    cd "${GITPOD_REPO_ROOT}/coreboot"
+    echo "Building the coreboot toolchain"
+    echo "This may take a while"
+    touch $LOG_DIR/crossgcc.log
+    (nohup python $LOG_DIR/log_stream.py $LOG_DIR/crossgcc.log 2>&1 >/dev/null &)
+        LOGPID=$!
+    (nohup make crossgcc-i386 CPUS=$(nproc) 2>&1 >$LOG_DIR/crossgcc.log &)
+        ${GITPOD_REPO_ROOT}/spinner.sh $! 2>/dev/null
+    kill -9 $LOGPID
+}
 do_build()
 {
     _dev=$1
-    cd "${SCRIPT_DIR}/coreboot"
-    pwd
-    sleep 3
-    make distclean
+    cd "${GITPOD_REPO_ROOT}/coreboot"
     cp configs/config.$_dev .config
     make olddefconfig
-    make CPUS=$(nproc)
+    touch $LOG_DIR/coreboot.log
+    (nohup python $LOG_DIR/log_stream.py $LOG_DIR/coreboot.log 2>&1 >/dev/null &)
+        LOGPID=$!
+    (nohup make CPUS=$(nproc) 2>&1 >$LOG_DIR/coreboot.log &)
+        ${GITPOD_REPO_ROOT}/spinner.sh $! 2>/dev/null
+    kill -9 $LOGPID
 }
 
-[[ -f "${SCRIPT_DIR}/devices" ]] && devices=($(cat "${SCRIPT_DIR}/devices")) || do_crosfirmware
+[[ ! -f devices ]] && { do_crosfirmware; sync; }
+
+devices=($(cat devices | sort -u))
 
 while [ -z $dev ]; do
+    clear
     echo "Choose one of the following devices for the build:"
-    for ((i = 0; i < ${#devices}; i++)); do
-        echo "${devices[$i]}";
+    for d in ${devices[*]}; do
+        echo "${d}";
     done
     echo 
-    echo "Type x or exit to stop the build"
-    read -r -p "Selection : " dev
-    for ((i = 0; i < ${#devices}; i++)); do
+    echo "Type x or exit to cancel"
+    read -r -p "Selection: " dev
+    for ((i = 0; i < ${#devices[*]}; i++)); do
         if [[ ${devices[$i]} = "${dev,,}" ]]; then
             do_build $dev
             break
@@ -48,7 +56,7 @@ while [ -z $dev ]; do
         fi
     done
 
-    if ((i == ${#devices})); then
+    if ((i == ${#devices[*]})); then
         unset dev
         continue
     fi

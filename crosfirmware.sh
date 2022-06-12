@@ -153,9 +153,10 @@ extract_octopus_blobs()
 			cbfstool $bios extract -n $dsp -f $_nhlt_blobs/$dsp
 		done
 		do_defconfig $_boardname
-		_boards+=" $_boardname"
+		#_boards+=" $_boardname"
+		echo "$_boardname" | tee -a "${SCRIPT_DIR}/devices" >/dev/null
 	done
-	echo "$_boards" | tee "${SCRIPT_DIR}/devices" >/dev/null
+	#echo "$_boards" | tee "${SCRIPT_DIR}/devices" >/dev/null
 }
 
 do_octopus()
@@ -164,11 +165,13 @@ do_octopus()
 	_url=$2
 	_file=$3
 
-	download_image $_url $_file
-
-	extract_partition ROOT-A $_file root-a.ext2
-	extract_shellball root-a.ext2 chromeos-firmwareupdate-$_board
-	extract_octopus_blobs chromeos-firmwareupdate-$_board
+	if [[ ! -f $_file ]]; then 
+		download_image $_url $_file
+		extract_partition ROOT-A $_file root-a.ext2
+		extract_shellball root-a.ext2 chromeos-firmwareupdate-$_board
+		extract_octopus_blobs chromeos-firmwareupdate-$_board
+		rm -rf $_file root-a.ext2 chromeos-firmware*
+	fi
 }
 
 #
@@ -184,4 +187,5 @@ get_inventory $CONF
 echo "Processing board $BOARD"
 eval $( grep $BOARD $CONF | grep '\(url=\|file=\)' )
 do_octopus $BOARD $url $file
+rm $CONF
 	

@@ -31,8 +31,8 @@ RUN echo "Obtaining Coreboot source and submodules" \
     && git submodule update --init --checkout
 
 WORKDIR coreboot
-RUN echo -e "Building Coreboot crossgcc.\nThis could take a while (10-15 minutes)" \
-    && make crossgcc-i386 CPUS=$(nproc)
+#RUN echo -e "Building Coreboot crossgcc.\nThis could take a while (10-15 minutes)" \
+#    && make crossgcc-i386 CPUS=$(nproc)
 
 RUN echo "Building and installing helper tools"
 

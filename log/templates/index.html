@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<pre id="output"></pre>
+<script>
+    var output = document.getElementById('output');
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '{{ url_for('stream') }}');
+    xhr.send();
+
+    setInterval(function() {
+        output.textContent = xhr.responseText;
+        window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: "smooth" });
+    }, 1000);
+</script>
+{% endblock %}

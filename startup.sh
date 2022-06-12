@@ -29,9 +29,9 @@ git clone --quiet https://review.coreboot.org/coreboot "${SCRIPT_DIR}/coreboot"
 cd "${SCRIPT_DIR}/coreboot"
 git submodule --quiet update --init --checkout
 
-echo "Building Coreboot crosstools"
-cd "${SCRIPT_DIR}/coreboot"
-make crossgcc-i386 CPUS=$(nproc) >/dev/null
+#echo "Building Coreboot crosstools"
+#cd "${SCRIPT_DIR}/coreboot"
+#make crossgcc-i386 CPUS=$(nproc) >/dev/null
 
 echo "Installing Helper Tools"
 cd "${SCRIPT_DIR}/coreboot/util/cbfstool"

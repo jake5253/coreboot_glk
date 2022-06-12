@@ -13,3 +13,5 @@ ports:
     onOpen: open-preview
   - port: 8123
     onOpen: notify
+  - port: 5000
+    onOpen: open-preview

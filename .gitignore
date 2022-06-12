@@ -1,2 +1,6 @@
 logger/build.logger
 coreboot
+chromeos_*.zip
+chromeos-firmware-*
+devices
+log/*.log
