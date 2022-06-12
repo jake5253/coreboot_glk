@@ -17,8 +17,8 @@ tasks:
       sudo make -C ./coreboot/util/cbfstool/ install
       make -C ./coreboot/util/ifdtool/
       sudo make -C ./coreboot/util/ifdtool/ install
-      make -C ./coreboot iasl
-      make -C ./coreboot nasm
+      make -C ./coreboot iasl CPUS=$(nproc)
+      make -C ./coreboot nasm CPUS=$(nproc)
       gp sync-done tools
       exit
 
@@ -36,14 +36,13 @@ tasks:
       echo "for coreboot_glk. This process will take quite a while"
       echo "even here on Gitpod. Please allow 10 - 15 minutes for"
       echo "this process to finish."
-      gp sync-await clone
+      gp sync-await clone >/dev/null & ./spinner.sh $!
       echo "Cloning coreboot repo has finished"
-      gp sync-await tools
+      gp sync-await tools >/dev/null & ./spinner.sh $!
       echo "Building the helper tools has finished"
       echo "We're building the crossgcc toolchain now. This is the"
       echo "big one that takes a while. BRB"
-      gp sync-await crossgcc & ./spinner.sh $!
-      exit
+      gp sync-await crossgcc >/dev/null & ./spinner.sh $!
     command: bash build.sh
 
 
