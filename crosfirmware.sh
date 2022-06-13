@@ -90,8 +90,8 @@ extract_shellball()
 
 do_defconfig()
 {
-	_board=$1
-	cat <<-EOF | tee -a "${SCRIPT_DIR}/coreboot/configs/config.$_board"
+	_board=${1:? "Board not specified"}
+	cat <<-EOF | tee "${SCRIPT_DIR}/coreboot/configs/config.${_board,,}"
 CONFIG_VENDOR_GOOGLE=y
 CONFIG_BOARD_GOOGLE_OCTOPUS=y
 CONFIG_BOARD_GOOGLE_${_board^^}=y
@@ -99,13 +99,13 @@ CONFIG_VARIANT_DIR="${_board,,}"
 CONFIG_BOARD_GOOGLE_BASEBOARD_OCTOPUS=y
 CONFIG_ADD_FSP_BINARIES=y
 CONFIG_CPU_MICROCODE_CBFS_EXTERNAL_BINS=y
-CONFIG_CPU_UCODE_BINARIES="3rdparty/blobs/mainboard/google/cpu_microcode_blob.bin"
-CONFIG_FSP_M_FILE="3rdparty/blobs/mainboard/google/fspm.bin"
+CONFIG_CPU_UCODE_BINARIES="3rdparty/blobs/mainboard/google/${_board,,}/cpu_microcode_blob.bin"
+CONFIG_FSP_M_FILE="3rdparty/blobs/mainboard/google/${_board,,}/fspm.bin"
 CONFIG_FSP_COMPRESS_FSP_M_LZMA=y
-CONFIG_FSP_S_FILE="3rdparty/blobs/mainboard/google/fsps.bin"
+CONFIG_FSP_S_FILE="3rdparty/blobs/mainboard/google/${_board,,}/fsps.bin"
 CONFIG_FSP_COMPRESS_FSP_S_LZMA=y
 CONFIG_PAYLOAD_TIANOCORE=y
-CONFIG_PAYLOAD_FILE="\$(obj)/UEFIPAYLOAD.fd"
+CONFIG_PAYLOAD_FILE="Build/UefiPayloadPkg/UEFIPAYLOAD.fd"
 CONFIG_PAYLOAD_OPTIONS=""
 CONFIG_TIANOCORE_UPSTREAM=y
 CONFIG_TIANOCORE_REPOSITORY="https://github.com/tianocore/edk2"
@@ -113,6 +113,15 @@ CONFIG_TIANOCORE_TAG_OR_REV="origin/master"
 CONFIG_TIANOCORE_RELEASE=y
 CONFIG_COMPRESSED_PAYLOAD_LZMA=y
 CONFIG_INCLUDE_NHLT_BLOBS=y
+CONFIG_IFD_BIN_PATH="3rdparty/blobs/mainboard/google/${_board,,}/flashdescriptor.bin"
+CONFIG_HAVE_IFD_BIN=y
+CONFIG_IFD_CHIPSET="glk"
+CONFIG_IFWI_FILE_NAME=3rdparty/blobs/mainboard/google/${_board,,}/ifwi.bin
+CONFIG_NEED_IFWI=y
+CONFIG_INTEL_GMA_VBT_FILE="3rdparty/blobs/mainboard/google/${_board,,}/vbt.bin"
+CONFIG_VBT_DATA_SIZE_KB=8
+CONFIG_INTEL_GMA_HAVE_VBT=y
+CONFIG_INTEL_GMA_ADD_VBT=y
 
 	EOF
 }

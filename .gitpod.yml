@@ -36,14 +36,20 @@ tasks:
       echo "for coreboot_glk. This process will take quite a while"
       echo "even here on Gitpod. Please allow 10 - 15 minutes for"
       echo "this process to finish."
-      gp sync-await clone >/dev/null & ./spinner.sh $!
+      echo "Cloning Coreboot..."
+      (gp sync-await clone >/dev/null & ./spinner.sh $! 2>/dev/null)
       echo "Cloning coreboot repo has finished"
-      gp sync-await tools >/dev/null & ./spinner.sh $!
+      echo "Building helper tools"
+      (gp sync-await tools >/dev/null & ./spinner.sh $! 2>/dev/null)
       echo "Building the helper tools has finished"
       echo "We're building the crossgcc toolchain now. This is the"
       echo "big one that takes a while. BRB"
-      gp sync-await crossgcc >/dev/null & ./spinner.sh $!
-    command: bash build.sh
+      (gp sync-await crossgcc >/dev/null & ./spinner.sh $! 2>/dev/null)
+      echo "Okay! Come back now. We're ready to go."
+      echo "Press [ENTER] to continue"
+      read -srp "or CTRL+C to cancel"
+      bash build.sh
+
 
 
 # List the ports to expose. Learn more https://www.gitpod.io/docs/config-ports/

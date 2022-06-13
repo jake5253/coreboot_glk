@@ -23,6 +23,7 @@ build_coreboot()
         [[ "$REPLY" =~ ^(y|Y)$ ]] && make nconfig;
         break; 
     done
+    echo
     touch $LOG_DIR/coreboot.log
     LOGPID=$( ( nohup python $LOG_DIR/log_stream.py $LOG_DIR/coreboot.log >/dev/null 2>&1 & echo $! ) )
     MAKEPID=$( ( nohup make -C ${GITPOD_REPO_ROOT}/coreboot all CPUS=$(nproc) >$LOG_DIR/coreboot.log 2>&1 & echo $! ) )
