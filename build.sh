@@ -18,11 +18,10 @@ build_coreboot()
     cd "${GITPOD_REPO_ROOT}/coreboot"
     cp configs/config.$_dev .config || { echo "File not found: $PWD/configs/config.$_dev"; exit 1; }
     make olddefconfig
-    while read -srp "Do you want to edit config before building? [y|N]: "; do
-        if [ $REPLY =~ ^(y|Y) ]; then
-            make nconfig
-            break
-        fi
+    until [ ! -z $REPLY ]; do 
+        read -N1 -i'x' -srp "Do you want to edit config before building? [y|N]: ";
+        [[ "$REPLY" =~ ^(y|Y)$ ]] && make nconfig;
+        break; 
     done
     touch $LOG_DIR/coreboot.log
     LOGPID=$( ( nohup python $LOG_DIR/log_stream.py $LOG_DIR/coreboot.log >/dev/null 2>&1 & echo $! ) )
