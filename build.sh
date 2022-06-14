@@ -4,18 +4,21 @@
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 GITPOD_REPO_ROOT=${GITPOD_REPO_ROOT:-.}
 LOG_DIR=${GITPOD_REPO_ROOT}/log
+LOG_FILE=${LOG_DIR}/coreboot_${date +'%F_%I%M%S'}.log
 
-echo "Logs will be stored in: ${LOG_DIR}"
+. ${SCRIPT_DIR}/helpers/spinner.sh
+
+echo "Log will be stored in: ${LOG_DIR}"
 
 do_crosfirmware()
 {
-    [[ -f crosfirmware.sh ]] && bash crosfirmware.sh || { echo "ERROR! crosfirmware.sh file not found!"; exit 1; }
+    [[ -f ${SCRIPT_DIR}/helpers/crosfirmware.sh ]] && bash ${SCRIPT_DIR}/helpers/crosfirmware.sh || { echo "ERROR! crosfirmware.sh file not found!"; exit 1; }
 }
 
 build_coreboot()
 {
     _dev=${1:? "device not specified!"}
-    cd "${GITPOD_REPO_ROOT}/coreboot"
+    pushd "${GITPOD_REPO_ROOT}/coreboot"
     cp configs/config.$_dev .config || { echo "File not found: $PWD/configs/config.$_dev"; exit 1; }
     make olddefconfig
     until [ ! -z $REPLY ]; do 
@@ -24,11 +27,12 @@ build_coreboot()
         break; 
     done
     echo
-    touch $LOG_DIR/coreboot.log
-    LOGPID=$( ( nohup python $LOG_DIR/log_stream.py $LOG_DIR/coreboot.log >/dev/null 2>&1 & echo $! ) )
-    MAKEPID=$( ( nohup make -C ${GITPOD_REPO_ROOT}/coreboot all CPUS=$(nproc) >$LOG_DIR/coreboot.log 2>&1 & echo $! ) )
-    ${GITPOD_REPO_ROOT}/spinner.sh ${MAKEPID} 2>/dev/null
+    touch ${LOG_FILE}
+    LOGPID=$( ( nohup python $LOG_DIR/log_stream.py ${LOG_FILE} >/dev/null 2>&1 & echo $! ) )
+    MAKEPID=$( ( nohup make all CPUS=$(nproc) >${LOG_FILE} 2>&1 & echo $! ) )
+    spinner ${MAKEPID} 2>/dev/null
     kill -9 $LOGPID
+    popd
 }
 
 showfiles()
@@ -38,8 +42,12 @@ showfiles()
     \nfirmware so you can download and store the file locally"
     echo 
     echo "To build for another device, run build.sh again."
-    python3 -m http.server --directory ./ 3000
+    python3 -m http.server --directory ${SCRIPT_DIR}/coreboot/build 3000
 }
+
+#
+## MAIN
+#
 
 [[ ! -f ${GITPOD_REPO_ROOT}/devices ]] && { do_crosfirmware; sync; }
 
@@ -52,16 +60,22 @@ while [ -z $dev ]; do
         echo "${d}";
     done
     echo 
-    echo "Type x or exit to cancel"
+    echo "Type 'x' or 'exit' to cancel"
     read -r -p "Selection: " dev
     for dv in ${devices[*]}; do
         if [[ "${dv,,}" = "${dev,,}" ]]; then
             valid=true
             break            
         elif [[ ${dev,,} =~ ^(x|exit)$ ]]; then
-            exit
+            quit=true
+            break
         fi
     done
-    [[ $valid ]] && { build_coreboot $dev && showfiles || { echo "ERROR!! Coreboot build failed!"; exit 1; } } || { echo "$dev is not a valid selection"; unset dev; }
+    echo
+    [[ quit ]] && exit
+    [[ $valid ]] && build_coreboot $dev || { echo "$dev is not a valid selection"; unset dev; }
 done
 unset dev
+# at this point build finished or failed but 
+# the return code is useless. check for coreboot.rom
+[[ -f ${SCRIPT_DIR}/coreboot/build ]] && showfiles || { echo "ERROR!! Coreboot build failed! See log for further details."; exit 1; } }
